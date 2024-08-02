@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Word Replacement Tool for Chrome Extensions</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+    .container {
+      max-width: 600px;
+      margin: auto;
+    }
+    .replacement-item {
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 10px;
+    }
+    .replacement-item input {
+      margin-top: 5px;
+    }
+    .button {
+      margin-top: 20px;
+    }
+    .selection {
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Word Replacement Tool for Chrome Extensions</h1>
+    <div class="selection">
+      <label for="extensionSelect">Select Chrome Extension:</label>
+      <select id="extensionSelect">
+        <option value="wordReplacerII">Word Replacer II</option>
+        <option value="wordReplacerMax">Word Replacer Max</option>
+      </select>
+    </div>
+    <div id="replacements">
+      <!-- Replacement fields will be populated here -->
+    </div>
+    <button class="button" onclick="generateJSON()">Generate JSON</button>
+    <pre id="output"></pre>
+  </div>
+
+  <script>
+    const varDefinitions = [
+      { var: 'var1', definition: 'IA term found in autodiscovery' },
+      { var: 'var2', definition: 'IA term found in the workspace interaction widget' },
+      { var: 'var3', definition: null },
+      { var: 'var4', definition: null },
+      { var: 'var5', definition: null },
+      { var: 'var6', definition: null },
+      { var: 'var7', definition: null },
+      { var: 'var8', definition: null },
+      { var: 'var9', definition: null },
+      { var: 'var10', definition: null },
+      { var: 'var11', definition: null },
+      { var: 'var12', definition: null },
+      { var: 'var13', definition: null },
+      { var: 'var14', definition: null },
+      { var: 'var15', definition: null },
+      { var: 'var16', definition: null },
+      { var: 'var17', definition: null },
+      { var: 'var18', definition: null },
+      { var: 'var19', definition: null },
+      { var: 'var20', definition: null }
+    ];
+
+    function generateUUID() {
+      return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        const r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+      });
+    }
+
+    function generateJSON() {
+      const extension = document.getElementById('extensionSelect').value;
+      const replacementItems = document.querySelectorAll('.replacement-item');
+      
+      if (extension === 'wordReplacerII') {
+        generateWordReplacerIIJSON(replacementItems);
+      } else if (extension === 'wordReplacerMax') {
+        generateWordReplacerMaxJSON(replacementItems);
+      }
+    }
+
+    function generateWordReplacerIIJSON(replacementItems) {
+      const version = "2.0.10";
+      const replacements = [];
+
+      replacementItems.forEach(item => {
+        const varNumber = item.getAttribute('data-var');
+        const repA = `var${varNumber}`;
+        const repB = item.querySelector('.repb').value;
+
+        if (repB) {
+          replacements.push({
+            active: true,
+            case: "Maintain",
+            repA: repA,
+            repB: repB,
+            type: "Simple"
+          });
+        }
+      });
+
+      const jsonData = {
+        version: version,
+        replacements: replacements
+      };
+
+      document.getElementById('output').textContent = JSON.stringify(jsonData, null, 2);
+    }
+
+    function generateWordReplacerMaxJSON(replacementItems) {
+      const matchers = [];
+
+      replacementItems.forEach((item, index) => {
+        const varNumber = item.getAttribute('data-var');
+        const repA = `var${varNumber}`;
+        const repB = item.querySelector('.repb').value;
+
+        if (repB) {
+          matchers.push({
+            active: true,
+            identifier: generateUUID(),
+            queries: [repA],
+            queryPatterns: [],
+            replacement: repB,
+            sortIndex: index
+          });
+        }
+      });
+
+      const jsonData = {
+        version: 1,
+        data: {
+          matchers: matchers
+        }
+      };
+
+      document.getElementById('output').textContent = JSON.stringify(jsonData, null, 2);
+    }
+
+    function initializeReplacements() {
+      const replacementsDiv = document.getElementById('replacements');
+      varDefinitions.forEach((definition, index) => {
+        const replacementItem = document.createElement('div');
+        replacementItem.className = 'replacement-item';
+        replacementItem.setAttribute('data-var', index + 1);
+        const varDescription = definition.definition ? definition.definition : '';
+        replacementItem.innerHTML = `
+          <p><strong>${definition.var}</strong>: ${varDescription}</p>
+          <input type="text" placeholder="Enter new term to replace ${definition.var} (repB)" class="repb">
+        `;
+        replacementsDiv.appendChild(replacementItem);
+      });
+    }
+
+    // Initialize the replacements on page load
+    window.onload = initializeReplacements;
+  </script>
+</body>
+</html>
